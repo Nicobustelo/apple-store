@@ -47,13 +47,8 @@ export default function StoreSwitcher({
         value: item.id
     }))
 
-    const currentStore = formattedItems.find((item) => item.value === params.storeid)
+    const currentStore = formattedItems.find((item) => item.value === params.storeId)
     
-    console.log("params.storeId: ", params);
-    console.log("formattedItems: ", formattedItems);
-    console.log("currentStore: ", currentStore );
-    
-
     const [open, setOpen] = useState(false)
 
     const onStoreSelect = (store: {value: string, label: string}) => {

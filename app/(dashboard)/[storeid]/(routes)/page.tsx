@@ -1,7 +1,7 @@
 import prismabd from "@/lib/prismabd"
 
 interface DashboardPageProps {
-    params: {storeid: string}
+    params: {storeId: string}
 }
 
 const DashboardPage : React.FC<DashboardPageProps> = async ({
@@ -9,7 +9,7 @@ const DashboardPage : React.FC<DashboardPageProps> = async ({
 }) => {
     const store = await prismabd.store.findFirst({
         where: {
-            id: params.storeid
+            id: params.storeId
         }
     })
 
