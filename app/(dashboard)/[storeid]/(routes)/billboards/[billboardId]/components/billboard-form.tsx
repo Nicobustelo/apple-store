@@ -3,7 +3,7 @@
 import * as z from "zod"
 import axios from "axios"
 import { useState } from "react";
-import { Store } from "@prisma/client";
+import { Billboard } from "@prisma/client";
 import { Trash } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,18 +25,20 @@ import { Input } from "@/components/ui/input";
 import { AlertModal } from "@/components/modals/alert-modal";
 import { ApiAlert } from "@/components/ui/api-alert";
 import { useOrigin } from "@/hooks/use-origin";
+import ImageUpload from "@/components/ui/image-upload";
 
-interface SettingsFormProps {
-    initialData: Store;
+interface BillboardFormProps {
+    initialData: Billboard | null;
 }
 
 const formSchema = z.object({
-    name: z.string().min(1)
+    label: z.string().min(1),
+    imageUrl: z.string().min(1)
 })
 
-type SettingsFormValues = z.infer<typeof formSchema>
+type BillboardFormValues = z.infer<typeof formSchema>
 
-export const SettingsForm: React.FC<SettingsFormProps> = ({
+export const BillboardForm: React.FC<BillboardFormProps> = ({
     initialData
 }) => {
     const params = useParams()
@@ -46,17 +48,30 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
 
-    const form = useForm<SettingsFormValues>({
+    const title = initialData ? "Edit Billboard" : "Create billboard"
+    const description = initialData ? "Edit a Billboard" : "Add a new billboard"
+    const toastMessage = initialData ? "Billboard Updated" : "Billboard created"
+    const action = initialData ? "Guardar Cambios" : "Crear"
+
+    const form = useForm<BillboardFormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: initialData
+        defaultValues: initialData || {
+            label: '',
+            imageUrl: ''
+        }
     })
 
-    const onSumbit = async (data: SettingsFormValues) =>{
+    const onSumbit = async (data: BillboardFormValues) =>{
         try {
             setLoading(true)
-            await axios.patch(`/api/stores/${params.storeId}`, data)
+            if(initialData) {
+                await axios.patch(`/api/${params.storeId}/billboards/${params.billboardId}`, data)
+            } else {
+                await axios.post(`/api/${params.storeId}/billboards`, data)
+            }
             router.refresh()
-            toast.success("Store updated.")
+            router.push(`/${params.storeId}/billboards`)
+            toast.success(toastMessage)
         } catch (error) {
             toast.error("Algo salio mal.")
         } finally {
@@ -67,12 +82,12 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
     const onDelete = async () => {
         try {
             setLoading(true)
-            await axios.delete(`/api/stores/${params.storeId}`)
+            await axios.delete(`/api/${params.storeId}/billboards/${params.billboardId}`)
             router.refresh()
             router.push("/")
-            toast.success("Tienda eliminada.")
+            toast.success("Baner eliminado.")
         } catch (error) {
-            toast.error("Es necesario eliminar todos los productos y categorias primero.")
+            toast.error("Es necesario eliminar todas las categorias que esten utilizando este baner.")
         } finally {
             setLoading(false)
             setOpen(false)
@@ -89,9 +104,10 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
             />
             <div className="flex items-center justify-between">
                 <Heading 
-                    title="Ajustes"
-                    description="Configuración de tu tienda"
+                    title={title}
+                    description={description}
                 />
+                { initialData && (
                 <Button
                     disabled={loading}
                     variant="destructive"
@@ -100,21 +116,42 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
                 >
                     <Trash className="h-4 w-4"/>
                 </Button>
+                )}
             </div>
             <Separator />
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSumbit)} className="space-y-8 w-full">
+                    <FormField 
+                        control={form.control}
+                        name="imageUrl"
+                        render={({field}) => (
+                            <FormItem>
+                                <FormLabel>
+                                    Background Image
+                                </FormLabel>
+                                <FormControl>
+                                    <ImageUpload 
+                                        value={field.value ? [field.value] : []}
+                                        disabled={loading}
+                                        onChange={(url) => field.onChange(url)}
+                                        onRemove={() => field.onChange("")}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <div className="grid grid-cols-3 gap-8">
                         <FormField 
                             control={form.control}
-                            name="name"
+                            name="label"
                             render={({field}) => (
                                 <FormItem>
                                     <FormLabel>
-                                        Nombre
+                                        Label
                                     </FormLabel>
                                     <FormControl>
-                                        <Input disabled={loading} placeholder="Nombre de tu Tienda" {...field}/>
+                                        <Input disabled={loading} placeholder="Billboard label" {...field}/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -122,16 +159,11 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
                         />
                     </div>
                     <Button disabled={loading} className="ml-auto" type="submit">
-                        Guardar Cambios
+                        {action}
                     </Button>
                 </form>
             </Form>
             <Separator />
-            <ApiAlert 
-                title="NEXT_PUBLIC_API_URL" 
-                description={`${origin}/api/${params.storeId}`}
-                variant="public"
-            />
         </>
     )
 }
