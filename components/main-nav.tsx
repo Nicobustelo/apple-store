@@ -29,6 +29,16 @@ export function MainNav({
             active: pathname === `/${params.storeId}/categories`
         },
         {
+            href: `/${params.storeId}/models`,
+            label: 'Modelos',
+            active: pathname === `/${params.storeId}/models`
+        },
+        {
+            href: `/${params.storeId}/memories`,
+            label: 'Memoria',
+            active: pathname === `/${params.storeId}/memories`
+        },
+        {
             href: `/${params.storeId}/settings`,
             label: 'Configuración',
             active: pathname === `/${params.storeId}/settings`
