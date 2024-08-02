@@ -40,7 +40,7 @@ export async function PATCH (
     // The data from the request the user made
     req: Request,
     // The params from the URL 
-    {params} : { params : { storeId: string, billboardId: string } }
+    {params} : { params : { storeId: string, productId: string } }
 ) {
     try {
         // Gets the userId from Clerk
@@ -87,8 +87,8 @@ export async function PATCH (
             return new NextResponse("Memory id is required", {status: 400})
         }
 
-        if(!params.billboardId) {
-            return new NextResponse("Billboard id is required", { status: 400 })
+        if(!params.productId) {
+            return new NextResponse("Product id is required", { status: 400 })
         }
 
         const storeByUserId = await prismabd.store.findFirst({
@@ -99,26 +99,51 @@ export async function PATCH (
         })
 
         if(!storeByUserId) {
-            // User is loged in, but does not have the permission to modify or create the billboard
+            // User is loged in, but does not have the permission to modify the product
             return new NextResponse("Unauthorized", {status: 403})
         }
 
-        const billboard = await prismabd.billboard.updateMany({
-            // Find the billboard
+        await prismabd.product.update({
+            // Find the product
             where: {
-                id: params.billboardId,
+                id: params.productId,
             },
             // Data that is going to be changed
             data: {
-                label,
-                imageUrl
+                name,
+                price,
+                categoryId,
+                modelId,
+                memoryId,
+                images: {
+                    deleteMany: {}
+                },
+                isFeatured,
+                isArchived
             }
         })
 
-        return NextResponse.json(billboard)
+        const product = await prismabd.product.update({
+            // Find the product
+            where: {
+                id: params.productId,
+            },
+            // Data that is going to be changed
+            data: {
+                images: {
+                    createMany: {
+                        data: [
+                            ...images.map((image: {url: string}) => image)
+                        ]
+                    }
+                }
+            }
+        })
+
+        return NextResponse.json(product)
 
     } catch (error) {
-        console.log('[BILLBOARD_PATCH]', error);
+        console.log('[PRODUCT_PATCH]', error);
         return new NextResponse("Internal Error", {status: 500})
     }
 }
@@ -128,7 +153,7 @@ export async function DELETE (
     // It is not used tho, it is only here becuase the params can only be accesed on the second argument of this function
     _req: Request,
     // The params from the URL 
-    {params} : { params : { storeId: string, billboardId: string } }
+    {params} : { params : { storeId: string, productId: string } }
 ) {
     try {
         // Gets the userId from Clerk
@@ -138,8 +163,8 @@ export async function DELETE (
             return new NextResponse("Unauthenticated", { status: 401 })
         }
 
-        if(!params.billboardId) {
-            return new NextResponse("Store id is required", { status: 400 })
+        if(!params.productId) {
+            return new NextResponse("Product id is required", { status: 400 })
         }
 
         const storeByUserId = await prismabd.store.findFirst({
@@ -150,21 +175,21 @@ export async function DELETE (
         })
 
         if(!storeByUserId) {
-            // User is loged in, but does not have the permission to modify or create the billboard
+            // User is loged in, but does not have the permission to delete the product
             return new NextResponse("Unauthorized", {status: 403})
         }
 
-        const billboard = await prismabd.billboard.deleteMany({
-            // Find the billboard
+        const product = await prismabd.product.deleteMany({
+            // Find the product
             where: {
-                id: params.billboardId,
+                id: params.productId,
             }
         })
 
-        return NextResponse.json(billboard)
+        return NextResponse.json(product)
 
     } catch (error) {
-        console.log('[BILLBOARD_DELETE]', error);
+        console.log('[PRODUCT_DELETE]', error);
         return new NextResponse("Internal Error", {status: 500})
     }
 }

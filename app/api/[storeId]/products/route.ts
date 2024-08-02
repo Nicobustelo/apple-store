@@ -61,7 +61,7 @@ export async function POST(
         })
 
         if(!storeByUserId) {
-            // User is loged in, but does not have the permission to modify or create the billboard
+            // User is loged in, but does not have the permission to modify or create the product
             return new NextResponse("Unauthorized", {status: 403})
         }
 
