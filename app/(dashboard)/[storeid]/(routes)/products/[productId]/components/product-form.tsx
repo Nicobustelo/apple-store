@@ -168,10 +168,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                     }}
                                     onRemove={(url) => {
                                         const newValue = field.value.filter((current) => current.url !== url);
-                                        field.onChange(newValue);
+                                        field.onChange((field.value = newValue));
                                     }}
                                 />
-                                </FormControl>
+                                </FormControl>  
                                 <FormMessage />
                             </FormItem>
                         )}
