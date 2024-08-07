@@ -70,8 +70,6 @@ export async function GET(
             }
         })
 
-        console.log(categories, "categories");
-        
         return NextResponse.json(categories)
     } catch (error) {
         console.log('[CATEGORIES_GET]', error)

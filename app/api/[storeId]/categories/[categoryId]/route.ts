@@ -19,6 +19,9 @@ export async function GET (
             // Find the category
             where: {
                 id: params.categoryId,
+            },
+            include: {
+                billboard: true
             }
         })
 
