@@ -6,41 +6,41 @@ const ProductsPage = async ({
 }:  {
     params: {productId: string, storeId: string}
 }) => {
+    // Obtener el producto para determinar si estamos creando uno nuevo o editando
     const product = await prismabd.product.findUnique({
-        // we fetch for a product to see if we are creating a new one or editing
         where: {
             id: params.productId
         },
         include: {
-            images: true
+            images: true,
         }
-    })
+    });
 
+    // Obtener las categorías disponibles en la tienda
     const categories = await prismabd.category.findMany({
         where: {
             storeId: params.storeId
         }
-    })
+    });
 
-    const models = await prismabd.model.findMany({
+    // Obtener las subcategorías asociadas a las categorías disponibles en la tienda
+    const subcategories = await prismabd.subcategory.findMany({
         where: {
-            storeId: params.storeId
+            category: {
+                storeId: params.storeId
+            }
+        },
+        include: {
+            values: true // Incluir los valores de cada subcategoría
         }
-    })
-
-    const memories = await prismabd.memory.findMany({
-        where: {
-            storeId: params.storeId
-        }
-    })
+    });
 
     return ( 
         <div className="flex-col">
             <div className="flex-1 space-y-4 p-8 pt-6">
                 <ProductForm
                     categories={categories}
-                    models={models}
-                    memories={memories} 
+                    subcategories={subcategories}
                     initialData={product}
                 />
             </div>

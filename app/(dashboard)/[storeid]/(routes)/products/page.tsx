@@ -18,14 +18,18 @@ const ProductsPage = async ({
         },
         include: {
             category: true,
-            model: true,
-            memory: true
+            // model: true,
+            // memory: true
         },
         // Orders the products by newest first
         orderBy: {
             createdAt: 'desc'
         }
     })
+
+    console.log('Products:');
+    console.log(products);
+    
 
     const formattedProducts: ProductColumn[] = products.map((item) => ({
         id: item.id,
@@ -34,8 +38,8 @@ const ProductsPage = async ({
         isArchived: item.isArchived,
         price: formatter.format(item.price.toNumber()),
         category: item.category.name,
-        model: item.model.name,
-        memory: item.memory.name,
+        // model: item.model.name,
+        // memory: item.memory.name,
         // Reformating the date into a string with the date-fns npm library
         createdAt: format(item.createdAt, "MMMM do, yyyy")
     }))

@@ -14,11 +14,10 @@ export async function POST(
             name,
             price,
             categoryId,
-            modelId,
-            memoryId,
             images,
             isFeatured,
-            isArchived
+            isArchived,
+            subcategoryValueIds
          } = body
 
         if(!userId) {
@@ -39,14 +38,6 @@ export async function POST(
 
         if(!categoryId) {
             return new NextResponse("Category id is required", {status: 400})
-        }
-
-        if(!modelId) {
-            return new NextResponse("Model id is required", {status: 400})
-        }
-
-        if(!memoryId) {
-            return new NextResponse("Memory id is required", {status: 400})
         }
 
         if(!params.storeId){
@@ -72,8 +63,6 @@ export async function POST(
                 isFeatured,
                 isArchived,
                 categoryId,
-                modelId,
-                memoryId,
                 storeId: params.storeId,
                 images: {
                     createMany: {
@@ -81,7 +70,8 @@ export async function POST(
                             ...images.map((image: {url: string}) => image)
                         ]
                     }
-                }
+                },
+                subcategoryValueIds: subcategoryValueIds || null,
             }
         })
 
@@ -92,7 +82,7 @@ export async function POST(
     }
 }
 
-export async function GET(
+export async function GET(  // Va a estar muy dificil esto hno
     req: Request,
     {params} : {params:{storeId: string}}
 ) {
@@ -111,16 +101,12 @@ export async function GET(
             where: {
                 storeId: params.storeId,
                 categoryId,
-                modelId,
-                memoryId,
                 isFeatured: isFeatured ? true : undefined,
                 isArchived: false
             },
             include: {
                 images: true,
                 category: true,
-                model: true,
-                memory: true,
             },
             orderBy: {
                 createdAt: 'desc'

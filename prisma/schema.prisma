@@ -20,8 +20,6 @@ model Store {
   userId      String 
   billboards  Billboard[]   @relation("StoreToBillboard")
   categories  Category[]    @relation("StoreToCategory")
-  models      Model[]       @relation("StoreToModel")
-  memory      Memory[]      @relation("StoreToMemory")
   products    Product[]     @relation("StoreToProduct")
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -80,55 +78,25 @@ model SubcategoryValue {
   @@index([subcategoryId])
 }
 
-model Model {
-  id        String      @id @default(uuid())
-  storeId   String
-  store     Store       @relation("StoreToModel", fields: [storeId], references: [id])
-  products  Product[]
-  name      String
-  value     String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  @@index([storeId])
-}
-
-model Memory {
-  id        String      @id @default(uuid())
-  storeId   String
-  store     Store       @relation("StoreToMemory", fields: [storeId], references: [id])
-  products  Product[]
-  name      String
-  value     String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  @@index([storeId])
-}
-
 model Product {
-  id          String    @id @default(uuid())
-  storeId     String
-  store       Store     @relation("StoreToProduct", fields: [storeId], references: [id])
-  categoryId  String
-  category    Category  @relation("CategoryToProduct", fields: [categoryId], references: [id])
-  name        String
-  price       Decimal
-  isFeatured  Boolean   @default(false)
-  isArchived  Boolean   @default(false)
-  modelId     String
-  model       Model     @relation(fields: [modelId], references: [id])
-  memoryId    String
-  memory      Memory    @relation(fields: [memoryId], references: [id])
-  images      Image[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                  String    @id @default(uuid())
+  storeId             String
+  store               Store     @relation("StoreToProduct", fields: [storeId], references: [id])
+  categoryId          String
+  category            Category  @relation("CategoryToProduct", fields: [categoryId], references: [id])
+  name                String
+  price               Decimal
+  isFeatured          Boolean   @default(false)
+  isArchived          Boolean   @default(false)
+  images              Image[]
+  subcategoryValueIds Json     // JSON field to store array of SubcategoryValue IDs
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@index([storeId])
   @@index([categoryId])
-  @@index([modelId])
-  @@index([memoryId])
 }
+
 
 model Image {
   id        String    @id @default(uuid())
