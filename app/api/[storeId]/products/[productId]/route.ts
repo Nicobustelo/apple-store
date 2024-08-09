@@ -23,8 +23,8 @@ export async function GET (
             include: {
                 images: true,
                 category: true,
-                model: true,
-                memory: true,
+                // model: true,
+                // memory: true,
             }
         })
 
@@ -52,12 +52,13 @@ export async function PATCH (
             name,
             price,
             categoryId,
-            modelId,
-            memoryId,
+            // modelId,
+            // memoryId,
             images,
+            subcategoryValueIds,
             isFeatured,
             isArchived
-         } = body
+        } = body
 
         if(!userId){
             return new NextResponse("Unauthenticated", { status: 401 })
@@ -77,14 +78,6 @@ export async function PATCH (
 
         if(!categoryId) {
             return new NextResponse("Category id is required", {status: 400})
-        }
-
-        if(!modelId) {
-            return new NextResponse("Model id is required", {status: 400})
-        }
-
-        if(!memoryId) {
-            return new NextResponse("Memory id is required", {status: 400})
         }
 
         if(!params.productId) {
@@ -113,11 +106,10 @@ export async function PATCH (
                 name,
                 price,
                 categoryId,
-                modelId,
-                memoryId,
                 images: {
                     deleteMany: {}
                 },
+                subcategoryValueIds: subcategoryValueIds || null, // Guardar los IDs como JSON
                 isFeatured,
                 isArchived
             }

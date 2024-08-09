@@ -33,6 +33,7 @@ import { Input } from "@/components/ui/input";
 import { AlertModal } from "@/components/modals/alert-modal";
 import ImageUpload from "@/components/ui/image-upload";
 import { Checkbox } from "@/components/ui/checkbox";
+import { log } from "console";
 
 interface Subcategory {
     id: string;
@@ -76,6 +77,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     const [loading, setLoading] = useState(false)
     const [selectedSubcategories, setSelectedSubcategories] = useState<Subcategory[]>([])
 
+    console.log("InitialData:");
+    console.log(initialData);
+
     const title = initialData ? "Editar Producto" : "Crear producto"
     const description = initialData ? "Editar un Producto" : "Añadir un nuevo producto"
     const toastMessage = initialData ? "Producto Actualizado" : "Producto creado"
@@ -85,7 +89,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         resolver: zodResolver(formSchema),
         defaultValues: initialData ? {
             ...initialData,
-            price: parseFloat(String(initialData?.price))
+            price: parseFloat(String(initialData?.price)),
+            subcategoryValues: initialData.subcategoryValueIds ? 
+                JSON.parse(initialData?.subcategoryValueIds).reduce((acc: any, subcategoryValueId: string) => {
+                    const subcategory = subcategories.find(subcategory => 
+                        subcategory.values.some(value => value.id === subcategoryValueId)
+                    );
+                    if (subcategory) {
+                        acc[subcategory.id] = subcategoryValueId;
+                    }
+                    return acc;
+                }, {}) : {}
         } : {
             name: '',
             images: [],
@@ -96,7 +110,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             subcategoryValues: {} // Inicializamos subcategoryValues vacío
         }
     });
-
+    
     console.log("subcategories");
     console.log(subcategories);
     
@@ -117,11 +131,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     
             // Convertimos el objeto subcategoryValues a un array de IDs
             const subcategoryValueIds = Object.values(data.subcategoryValues);
+
+            console.log("subcategoryValueIds:");
+            console.log(subcategoryValueIds);
     
             const productData = {
                 ...data,
+                subcategoryValues: undefined, // Eliminamos subcategoryValues del objeto
                 subcategoryValueIds: JSON.stringify(subcategoryValueIds) // Almacenamos los IDs como JSON
             };
+
+            console.log("ProductData:");
+            console.log(productData);
     
             if (initialData) {
                 await axios.patch(`/api/${params.storeId}/products/${params.productId}`, productData);
