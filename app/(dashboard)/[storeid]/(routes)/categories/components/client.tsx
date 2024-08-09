@@ -29,7 +29,7 @@ export const CategoryClient: React.FC<CategoryClientProps> = ({
                 />
                 <Button onClick={() => router.push(`/${params.storeId}/categories/new`)}>
                     <Plus className="mr-2 h-4 w-4"/>
-                    Add New
+                    Nueva Categoría
                 </Button>
             </div>
             <Separator />
