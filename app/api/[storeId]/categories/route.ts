@@ -10,7 +10,7 @@ export async function POST(
         const { userId } = auth()
         const body = await req.json()
 
-        const { name, billboardId } = body
+        const { name, billboardId, subcategories } = body
 
         if(!userId) {
             return new NextResponse("Unauthenticated", {status: 401})
@@ -44,9 +44,17 @@ export async function POST(
             data: {
                 name,
                 billboardId,
-                storeId: params.storeId
-            }
-        })
+                storeId: params.storeId,
+                subcategories: {
+                    create: subcategories.map((subcategory: { name: string, values: string[] }) => ({
+                        name: subcategory.name,
+                        values: {
+                            create: subcategory.values.map(value => ({ value })),
+                        },
+                    })),
+                },
+            },
+        });
 
         return NextResponse.json(category)
     } catch (error) {
@@ -66,9 +74,16 @@ export async function GET(
 
         const categories = await prismabd.category.findMany({
             where: {
-                storeId: params.storeId
-            }
-        })
+                storeId: params.storeId,
+            },
+            include: {
+                subcategories: {
+                    include: {
+                        values: true,
+                    },
+                },
+            },
+        });
 
         return NextResponse.json(categories)
     } catch (error) {

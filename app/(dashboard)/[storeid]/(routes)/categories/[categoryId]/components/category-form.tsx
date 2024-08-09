@@ -4,7 +4,7 @@ import * as z from "zod"
 import axios from "axios"
 import { useState } from "react";
 import { Billboard, Category } from "@prisma/client";
-import { Trash } from "lucide-react";
+import { CirclePlus, Trash } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useRouter } from "next/navigation";
@@ -34,6 +34,7 @@ import {
 interface CategoryFormProps {
     initialData: Category | null;
     billboards: Billboard[]
+    Initialsubcategories: { name: string, values: string[] }[]
 }
 
 const formSchema = z.object({
@@ -45,18 +46,20 @@ type CategoryFormValues = z.infer<typeof formSchema>
 
 export const CategoryForm: React.FC<CategoryFormProps> = ({
     initialData,
-    billboards
+    billboards,
+    Initialsubcategories,
 }) => {
     const params = useParams()
     const router = useRouter()
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [subcategories, setSubcategories] = useState<{ name: string, values: string[] }[]>(Initialsubcategories || [])
 
-    const title = initialData ? "Editar Categoria" : "Crear categoria"
-    const description = initialData ? "Editar una Categoria" : "Añadir nueva categoria"
-    const toastMessage = initialData ? "Categoria actualizada" : "Categoria creada"
-    const action = initialData ? "Guardar Cambios" : "Crear"
+    const title = initialData ? "Editar Categoría" : "Crear categoría"
+    const description = initialData ? "Editar una Categoría" : "Añadir nueva categoría"
+    const toastMessage = initialData ? "Categoría actualizada" : "Categoría creada"
+    const action = initialData ? "Guardar Cambios" : "Crear Categoría"
 
     const form = useForm<CategoryFormValues>({
         resolver: zodResolver(formSchema),
@@ -66,19 +69,26 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
         }
     })
 
+    console.log("initial data");
+    console.log(initialData);
+
     const onSumbit = async (data: CategoryFormValues) =>{
         try {
             setLoading(true)
+            console.log("submited data");
+            console.log({ ...data, subcategories });
+            
             if(initialData) {
-                await axios.patch(`/api/${params.storeId}/categories/${params.categoryId}`, data)
+                await axios.patch(`/api/${params.storeId}/categories/${params.categoryId}`, { ...data, subcategories })
             } else {
-                await axios.post(`/api/${params.storeId}/categories`, data)
+                await axios.post(`/api/${params.storeId}/categories`, { ...data, subcategories })
             }
             router.refresh()
             router.push(`/${params.storeId}/categories`)
             toast.success(toastMessage)
-        } catch (error) {
-            toast.error("Algo salio mal.")
+        } catch (error: any) {
+            console.error("Request Error: ", error.response?.data || error.message);
+            toast.error(error.response?.data?.message || "Algo salio mal.")
         } finally {
             setLoading(false)
         }
@@ -92,12 +102,46 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
             router.push(`/${params.storeId}/categories`)
             toast.success("Categoría eliminada.")
         } catch (error) {
-            toast.error("Es necesario eliminar todas los productos que esten utilizando esta categoria.")
+            toast.error("Es necesario eliminar todas los productos que esten utilizando esta categoría.")
         } finally {
             setLoading(false)
             setOpen(false)
         }
     }
+
+    const addSubcategory = () => {
+        setSubcategories([...subcategories, { name: "", values: [] }])
+    }
+
+    const removeSubcategory = (index: number) => {
+        setSubcategories(subcategories.filter((_, i) => i !== index))
+    }
+
+    const handleSubcategoryChange = (index: number, value: string) => {
+        const newSubcategories = [...subcategories]
+        newSubcategories[index].name = value
+        console.log("newSubcategories");
+        console.log(newSubcategories);
+        setSubcategories(newSubcategories)
+    }
+
+    const addSubcategoryValue = (index: number) => {
+        const newSubcategories = [...subcategories];
+        newSubcategories[index].values.push(""); // Añadir un valor vacío por defecto
+        setSubcategories(newSubcategories);
+    };
+
+    const handleSubcategoryValueChange = (subIndex: number, valueIndex: number, value: string) => {
+        const newSubcategories = [...subcategories];
+        newSubcategories[subIndex].values[valueIndex] = value;
+        setSubcategories(newSubcategories);
+    };
+
+    const removeSubcategoryValue = (subIndex: number, valueIndex: number) => {
+        const newSubcategories = [...subcategories];
+        newSubcategories[subIndex].values = newSubcategories[subIndex].values.filter((_, i) => i !== valueIndex);
+        setSubcategories(newSubcategories);
+    };
 
     return (
         <>
@@ -136,7 +180,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
                                         Nombre
                                     </FormLabel>
                                     <FormControl>
-                                        <Input disabled={loading} placeholder="Nombre de Categoria" {...field}/>
+                                        <Input disabled={loading} placeholder="Nombre de Categoría" {...field}/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -176,6 +220,63 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
                                 </FormItem>
                             )}
                         />
+                    </div>
+                    <div className="space-y-4">
+                        <FormLabel>Subcategorías</FormLabel>
+                        {subcategories.map((subcategory, subIndex) => (
+                            <div key={subIndex} className="space-y-4">
+                                <div className="flex items-center space-x-4">
+                                    <Input 
+                                        value={subcategory.name} 
+                                        onChange={(e) => handleSubcategoryChange(subIndex, e.target.value)} 
+                                        placeholder="Nombre de Subcategoría" 
+                                        disabled={loading} 
+                                    />
+                                    <Button 
+                                        type="button" 
+                                        onClick={() => addSubcategoryValue(subIndex)} 
+                                        variant="default"
+                                        disabled={loading}
+                                        size="sm"
+                                    >
+                                        <CirclePlus className="h-4 w-4"/>
+                                    </Button>
+                                    <Button 
+                                        type="button" 
+                                        onClick={() => removeSubcategory(subIndex)} 
+                                        variant="destructive" 
+                                        size="sm"
+                                        disabled={loading}
+                                    >
+                                        <Trash className="h-4 w-4"/>
+                                    </Button>
+                                </div>
+                                <div className="pl-8">
+                                    {subcategory.values.map((value, valueIndex) => (
+                                        <div key={valueIndex} className="flex items-center space-x-4 mb-2">
+                                            <Input 
+                                                value={value} 
+                                                onChange={(e) => handleSubcategoryValueChange(subIndex, valueIndex, e.target.value)} 
+                                                placeholder="Valor de Subcategoría" 
+                                                disabled={loading} 
+                                            />
+                                            <Button 
+                                                type="button" 
+                                                onClick={() => removeSubcategoryValue(subIndex, valueIndex)} 
+                                                variant="destructive" 
+                                                size="sm"
+                                                disabled={loading}
+                                            >
+                                                <Trash className="h-4 w-4"/>
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                        <Button type="button" onClick={addSubcategory} disabled={loading}>
+                            Añadir Subcategoría
+                        </Button>
                     </div>
                     <Button disabled={loading} className="ml-auto" type="submit">
                         {action}

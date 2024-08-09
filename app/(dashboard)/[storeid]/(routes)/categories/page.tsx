@@ -16,7 +16,8 @@ const CategoriesPage = async ({
             storeId: params.storeId
         },
         include:{
-            billboard: true
+            billboard: true,
+            subcategories: true,
         },
         // Orders the categories by newest first
         orderBy: {
@@ -24,12 +25,16 @@ const CategoriesPage = async ({
         }
     })
 
+    console.log("categories");
+    console.log(JSON.stringify(categories, null, 2));
+
     const formattedCategories: CategoryColumn[] = categories.map((item) => ({
         id: item.id,
         name: item.name,
         billboardLabel: item.billboard.label,
         // Reformating the date into a string with the date-fns npm library
-        createdAt: format(item.createdAt, "MMMM do, yyyy")
+        createdAt: format(item.createdAt, "MMMM do, yyyy"),
+        subcategories: item.subcategories.map((subcategory) => subcategory.name).join(", ")
     }))
 
     return (

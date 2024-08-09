@@ -15,89 +15,114 @@ datasource db {
 }
 
 model Store {
-  id        String  @id @default(uuid())
-  name      String
-  userId    String 
-  billboards  Billboard[] @relation("StoreToBillboard")
-  categories  Category[] @relation("StoreToCategory")
-  models      Model[] @relation("StoreToModel")
-  memory      Memory[] @relation("StoreToMemory")
-  products    Product[] @relation("StoreToProduct")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String        @id @default(uuid())
+  name        String
+  userId      String 
+  billboards  Billboard[]   @relation("StoreToBillboard")
+  categories  Category[]    @relation("StoreToCategory")
+  models      Model[]       @relation("StoreToModel")
+  memory      Memory[]      @relation("StoreToMemory")
+  products    Product[]     @relation("StoreToProduct")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 model Billboard {
-  id        String @id @default(uuid())
-  storeId   String
-  store     Store @relation("StoreToBillboard", fields: [storeId], references: [id])
-  label     String
-  imageUrl  String
+  id          String      @id @default(uuid())
+  storeId     String
+  store       Store       @relation("StoreToBillboard", fields: [storeId], references: [id])
+  label       String
+  imageUrl    String
   categories  Category[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([storeId])
 }
 
 model Category {
-  id        String @id @default(uuid())
-  storeId   String
-  store     Store @relation("StoreToCategory", fields: [storeId], references: [id])
-  billboardId String
-  billboard  Billboard @relation(fields: [billboardId], references: [id])
-  products  Product[] @relation("CategoryToProduct")
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String        @id @default(uuid())
+  storeId       String
+  store         Store         @relation("StoreToCategory", fields: [storeId], references: [id])
+  billboardId   String
+  billboard     Billboard     @relation(fields: [billboardId], references: [id])
+  products      Product[]     @relation("CategoryToProduct")
+  name          String
+  subcategories Subcategory[] @relation("CategoryToSubcategory")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@index([storeId])
   @@index([billboardId])
 }
 
+
+model Subcategory {
+  id          String              @id @default(uuid())
+  categoryId  String
+  category    Category            @relation("CategoryToSubcategory", fields: [categoryId], references: [id])
+  name        String
+  values      SubcategoryValue[]  @relation("SubcategoryToValue")
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([categoryId])
+}
+
+model SubcategoryValue {
+  id            String     @id @default(uuid())
+  subcategoryId String
+  subcategory   Subcategory @relation("SubcategoryToValue", fields: [subcategoryId], references: [id])
+  value         String
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([subcategoryId])
+}
+
 model Model {
-  id        String @id @default(uuid())
+  id        String      @id @default(uuid())
   storeId   String
-  store     Store @relation("StoreToModel", fields: [storeId], references: [id])
+  store     Store       @relation("StoreToModel", fields: [storeId], references: [id])
   products  Product[]
   name      String
   value     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   @@index([storeId])
 }
 
 model Memory {
-  id        String @id @default(uuid())
+  id        String      @id @default(uuid())
   storeId   String
-  store     Store @relation("StoreToMemory", fields: [storeId], references: [id])
+  store     Store       @relation("StoreToMemory", fields: [storeId], references: [id])
   products  Product[]
   name      String
   value     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   @@index([storeId])
 }
 
 model Product {
-  id        String @id @default(uuid())
-  storeId   String
-  store     Store @relation("StoreToProduct", fields: [storeId], references: [id])
-  categoryId String
-  category  Category @relation("CategoryToProduct", fields: [categoryId], references: [id])
-  name      String
-  price     Decimal
-  isFeatured Boolean @default(false)
-  isArchived Boolean @default(false)
-  modelId    String
-  model     Model @relation(fields: [modelId], references: [id])
+  id          String    @id @default(uuid())
+  storeId     String
+  store       Store     @relation("StoreToProduct", fields: [storeId], references: [id])
+  categoryId  String
+  category    Category  @relation("CategoryToProduct", fields: [categoryId], references: [id])
+  name        String
+  price       Decimal
+  isFeatured  Boolean   @default(false)
+  isArchived  Boolean   @default(false)
+  modelId     String
+  model       Model     @relation(fields: [modelId], references: [id])
   memoryId    String
-  memory    Memory @relation(fields: [memoryId], references: [id])
-  images     Image[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  memory      Memory    @relation(fields: [memoryId], references: [id])
+  images      Image[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([storeId])
   @@index([categoryId])
@@ -106,12 +131,12 @@ model Product {
 }
 
 model Image {
-  id        String @id @default(uuid())
+  id        String    @id @default(uuid())
   productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
   url       String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([productId])
 }
