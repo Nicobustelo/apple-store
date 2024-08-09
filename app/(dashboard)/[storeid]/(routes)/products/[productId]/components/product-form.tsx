@@ -91,7 +91,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             ...initialData,
             price: parseFloat(String(initialData?.price)),
             subcategoryValues: initialData.subcategoryValueIds ? 
-                JSON.parse(initialData?.subcategoryValueIds).reduce((acc: any, subcategoryValueId: string) => {
+                JSON.parse(initialData?.subcategoryValueIds.toString()).reduce((acc: any, subcategoryValueId: string) => {
                     const subcategory = subcategories.find(subcategory => 
                         subcategory.values.some(value => value.id === subcategoryValueId)
                     );
