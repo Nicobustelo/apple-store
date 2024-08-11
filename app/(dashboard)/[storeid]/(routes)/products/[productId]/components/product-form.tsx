@@ -33,7 +33,6 @@ import { Input } from "@/components/ui/input";
 import { AlertModal } from "@/components/modals/alert-modal";
 import ImageUpload from "@/components/ui/image-upload";
 import { Checkbox } from "@/components/ui/checkbox";
-import { log } from "console";
 
 interface Subcategory {
     id: string;
@@ -60,7 +59,14 @@ const formSchema = z.object({
     categoryId: z.string().min(1),
     isFeatured: z.boolean().default(false).optional(),
     isArchived: z.boolean().default(false).optional(),
-    subcategoryValues: z.record(z.string(), z.string().min(1)) // Clave: Subcategoría ID, Valor: Subcategoría Valor ID
+    subcategoryValues: z.array(z.object({
+        id: z.string(),
+        name: z.string(),
+        values: z.array(z.object({
+            id: z.string(),
+            value: z.string()
+        }))
+    }))
 });
 
 type ProductFormValues = z.infer<typeof formSchema>
@@ -85,21 +91,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     const toastMessage = initialData ? "Producto Actualizado" : "Producto creado"
     const action = initialData ? "Guardar Cambios" : "Crear"
 
+
     const form = useForm<ProductFormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: initialData ? {
             ...initialData,
             price: parseFloat(String(initialData?.price)),
-            subcategoryValues: initialData.subcategoryValueIds ? 
-                JSON.parse(initialData?.subcategoryValueIds.toString()).reduce((acc: any, subcategoryValueId: string) => {
-                    const subcategory = subcategories.find(subcategory => 
-                        subcategory.values.some(value => value.id === subcategoryValueId)
-                    );
-                    if (subcategory) {
-                        acc[subcategory.id] = subcategoryValueId;
-                    }
-                    return acc;
-                }, {}) : {}
+            subcategoryValues: initialData.subcategoryValueIds 
+                ? JSON.parse(initialData.subcategoryValueIds as string)
+                : []
         } : {
             name: '',
             images: [],
@@ -107,7 +107,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             categoryId: '',
             isFeatured: false,
             isArchived: false,
-            subcategoryValues: {} // Inicializamos subcategoryValues vacío
+            subcategoryValues: []
         }
     });
     
@@ -125,25 +125,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         setSelectedSubcategories(selectedCategorySubcategories);
     }, [form.watch("categoryId"), subcategories]);
 
-    const onSumbit = async (data: ProductFormValues) => {
+    const onSubmit = async (data: ProductFormValues) => {
         try {
             setLoading(true);
     
-            // Convertimos el objeto subcategoryValues a un array de IDs
-            const subcategoryValueIds = Object.values(data.subcategoryValues);
-
-            console.log("subcategoryValueIds:");
-            console.log(subcategoryValueIds);
-    
             const productData = {
                 ...data,
-                subcategoryValues: undefined, // Eliminamos subcategoryValues del objeto
-                subcategoryValueIds: JSON.stringify(subcategoryValueIds) // Almacenamos los IDs como JSON
+                subcategoryValueIds: JSON.stringify(data.subcategoryValues)
             };
 
-            console.log("ProductData:");
-            console.log(productData);
-    
             if (initialData) {
                 await axios.patch(`/api/${params.storeId}/products/${params.productId}`, productData);
             } else {
@@ -154,7 +144,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             router.push(`/${params.storeId}/products`);
             toast.success(toastMessage);
         } catch (error) {
-            toast.error("Algo salió mal.");
+            toast.error("Something went wrong.");
         } finally {
             setLoading(false);
         }
@@ -202,7 +192,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             </div>
             <Separator />
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSumbit)} className="space-y-8 w-full">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
                     <FormField 
                         control={form.control}
                         name="images"
@@ -295,11 +285,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                             )}
                         />
                         {/* Renderiza dinámicamente selectores para las subcategorías */}
-                        {selectedSubcategories.map((subcategory) => (
+                        {selectedSubcategories.map((subcategory, index) => (
                             <FormField 
                                 key={subcategory.id}
                                 control={form.control}
-                                name={`subcategoryValues.${subcategory.id}`}
+                                name={`subcategoryValues.${index}`}
                                 render={({field}) => (
                                     <FormItem>
                                         <FormLabel>
@@ -307,20 +297,27 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                         </FormLabel>
                                         <Select 
                                             disabled={loading} 
-                                            onValueChange={field.onChange} 
-                                            value={field.value} 
-                                            defaultValue={field.value}
+                                            onValueChange={(value) => {
+                                                const selectedValue = subcategory.values.find(v => v.id === value);
+                                                field.onChange({
+                                                    id: subcategory.id,
+                                                    name: subcategory.name,
+                                                    values: selectedValue ? [selectedValue] : []
+                                                });
+                                            }}
+                                            value={field.value?.values[0]?.id} 
+                                            defaultValue={field.value?.values[0]?.id}
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue 
-                                                        defaultValue={field.value} 
-                                                        placeholder={`Selecciona un valor para ${subcategory.name}`}
+                                                        defaultValue={field.value?.values[0]?.id} 
+                                                        placeholder={`Select a value for ${subcategory.name}`}
                                                     />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {subcategory.values.map((value: { id: string, value: string }) => (
+                                                {subcategory.values.map((value) => (
                                                     <SelectItem key={value.id} value={value.id}>
                                                         {value.value}
                                                     </SelectItem>
