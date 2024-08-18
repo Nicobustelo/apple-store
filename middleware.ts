@@ -5,7 +5,11 @@ import { authMiddleware } from "@clerk/nextjs";
 export default authMiddleware({
   // Allow signed out users to access the specified routes:
   // publicRoutes: ['/anyone-can-visit-this-route'],
-  publicRoutes: ["/api/:path*"]
+  publicRoutes: [
+    "/",                // Add this to make the homepage public
+    "/api/:path*",      // This keeps your API routes public
+    "/((?!api|trpc).*)", // This makes all non-API routes public
+  ]
 });
  
 export const config = {
