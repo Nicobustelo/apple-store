@@ -67,6 +67,13 @@ export async function GET(
     req: Request,
     {params} : {params:{storeId: string}}
 ) {
+    console.log("request got here at least - GET Catgories");
+
+    // Add CORS headers
+    const headers = new Headers();
+    headers.append('Access-Control-Allow-Origin', '*');
+    headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
     try {
         if(!params.storeId){
             return new NextResponse("Store ID is required", {status: 400})
@@ -85,7 +92,7 @@ export async function GET(
             },
         });
 
-        return NextResponse.json(categories)
+        return NextResponse.json(categories, { headers })
     } catch (error) {
         console.log('[CATEGORIES_GET]', error)
         return new NextResponse("Internal error", {status: 500})
