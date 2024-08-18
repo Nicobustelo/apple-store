@@ -67,7 +67,7 @@ export async function GET(
     req: Request,
     {params} : {params:{storeId: string}}
 ) {
-    console.log("request got here at least - GET Catgories");
+    console.log("request got here at least - GET Categories");
 
     // Add CORS headers
     const headers = new Headers();
@@ -75,9 +75,13 @@ export async function GET(
     headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
     try {
+        console.log("2 request got here at least - GET Categories");
+
         if(!params.storeId){
             return new NextResponse("Store ID is required", {status: 400})
         }
+
+        console.log("3 request got here at least - GET Categories");
 
         const categories = await prismabd.category.findMany({
             where: {
@@ -91,6 +95,8 @@ export async function GET(
                 },
             },
         });
+
+        console.log("categories from GET categories endpoint: ", categories);
 
         return NextResponse.json(categories, { headers })
     } catch (error) {
