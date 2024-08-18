@@ -86,6 +86,11 @@ export async function GET(  // Va a estar muy dificil esto hno
     req: Request,
     {params} : {params:{storeId: string}}
 ) {
+    // Add CORS headers
+    const headers = new Headers();
+    headers.append('Access-Control-Allow-Origin', '*');
+    headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
     try {
         const { searchParams } = new URL(req.url);
         const categoryId = searchParams.get("categoryId") || undefined;
@@ -113,7 +118,7 @@ export async function GET(  // Va a estar muy dificil esto hno
             }
         })
 
-        return NextResponse.json(products)
+        return NextResponse.json(products, { headers })
     } catch (error) {
         console.log('[PRODUCTS_GET]', error)
         return new NextResponse("Internal error", {status: 500})

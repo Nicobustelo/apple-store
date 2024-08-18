@@ -59,6 +59,11 @@ export async function GET(
     req: Request,
     {params} : {params:{storeId: string}}
 ) {
+    // Add CORS headers
+    const headers = new Headers();
+    headers.append('Access-Control-Allow-Origin', '*');
+    headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
     try {
         if(!params.storeId){
             return new NextResponse("Store ID is required", {status: 400})
@@ -70,7 +75,7 @@ export async function GET(
             }
         })
 
-        return NextResponse.json(billboards)
+        return NextResponse.json(billboards, { headers })
     } catch (error) {
         console.log('[BILLBOARDS_GET]', error)
         return new NextResponse("Internal error", {status: 500})

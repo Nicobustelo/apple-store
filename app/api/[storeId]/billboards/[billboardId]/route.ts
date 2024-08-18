@@ -10,6 +10,11 @@ export async function GET (
     // The params from the URL 
     {params} : { params : { billboardId: string } }
 ) {
+    // Add CORS headers
+    const headers = new Headers();
+    headers.append('Access-Control-Allow-Origin', '*');
+    headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
     try {
         if(!params.billboardId) {
             return new NextResponse("Store id is required", { status: 400 })
@@ -22,7 +27,7 @@ export async function GET (
             }
         })
 
-        return NextResponse.json(billboard)
+        return NextResponse.json(billboard, { headers })
 
     } catch (error) {
         console.log('[BILLBOARD_GET]', error);

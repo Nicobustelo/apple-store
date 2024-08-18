@@ -10,6 +10,11 @@ export async function GET (
     // The params from the URL 
     {params} : { params : { productId: string } }
 ) {
+    // Add CORS headers
+    const headers = new Headers();
+    headers.append('Access-Control-Allow-Origin', '*');
+    headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
     try {
         if(!params.productId) {
             return new NextResponse("Product id is required", { status: 400 })
@@ -28,7 +33,7 @@ export async function GET (
             }
         })
 
-        return NextResponse.json(product)
+        return NextResponse.json(product, { headers })
 
     } catch (error) {
         console.log('[PRODUCT_GET]', error);

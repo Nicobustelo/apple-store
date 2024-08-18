@@ -10,6 +10,10 @@ export async function GET (
     // The params from the URL 
     {params} : { params : { categoryId: string } }
 ) {
+    // Add CORS headers
+    const headers = new Headers();
+    headers.append('Access-Control-Allow-Origin', '*');
+    headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS');
     try {
         if(!params.categoryId) {
             return new NextResponse("Category id is required", { status: 400 })
@@ -26,7 +30,7 @@ export async function GET (
             }
         })
 
-        return NextResponse.json(category)
+        return NextResponse.json(category, { headers })
 
     } catch (error) {
         console.log('[CATEGORY_GET]', error);
