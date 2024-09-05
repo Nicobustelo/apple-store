@@ -75,13 +75,13 @@ export async function GET(
     headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
     try {
-        console.log("2 request got here at least - GET Categories");
+        console.log("request got here at least 2 - GET Categories");
 
         if(!params.storeId){
             return new NextResponse("Store ID is required", {status: 400})
         }
 
-        console.log("3 request got here at least - GET Categories");
+        console.log("request got here at least 3 - GET Categories");
 
         const categories = await prismabd.category.findMany({
             where: {

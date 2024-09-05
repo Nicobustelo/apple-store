@@ -31,7 +31,10 @@ interface SettingsFormProps {
 }
 
 const formSchema = z.object({
-    name: z.string().min(1)
+    name: z.string().min(1),
+    subdomain: z.string().min(1).regex(/^[a-zA-Z0-9-]+$/, {
+        message: "Subdomain can only contain letters, numbers, and hyphens"
+    })
 })
 
 type SettingsFormValues = z.infer<typeof formSchema>
@@ -48,17 +51,20 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
 
     const form = useForm<SettingsFormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: initialData
+        defaultValues: {
+            name: initialData.name,
+            subdomain: initialData.subdomain || ""
+        }
     })
 
-    const onSumbit = async (data: SettingsFormValues) =>{
+    const onSubmit = async (data: SettingsFormValues) => {
         try {
             setLoading(true)
             await axios.patch(`/api/stores/${params.storeId}`, data)
             router.refresh()
             toast.success("Store updated.")
         } catch (error) {
-            toast.error("Algo salio mal.")
+            toast.error("Algo salió mal.")
         } finally {
             setLoading(false)
         }
@@ -72,7 +78,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
             router.push("/")
             toast.success("Tienda eliminada.")
         } catch (error) {
-            toast.error("Es necesario eliminar todos los productos y categorias primero.")
+            toast.error("Es necesario eliminar todos los productos y categorías primero.")
         } finally {
             setLoading(false)
             setOpen(false)
@@ -103,7 +109,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
             </div>
             <Separator />
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSumbit)} className="space-y-8 w-full">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
                     <div className="grid grid-cols-3 gap-8">
                         <FormField 
                             control={form.control}
@@ -115,6 +121,29 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
                                     </FormLabel>
                                     <FormControl>
                                         <Input disabled={loading} placeholder="Nombre de tu Tienda" {...field}/>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField 
+                            control={form.control}
+                            name="subdomain"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        Subdominio de la Tienda
+                                    </FormLabel>
+                                    <FormControl>
+                                        <div className="flex items-center">
+                                            <Input 
+                                                disabled={loading} 
+                                                placeholder="tu-tienda" 
+                                                {...field}
+                                                className="w-32"
+                                            />
+                                            <span className="ml-2">.itiendas.vercel.app</span>
+                                        </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

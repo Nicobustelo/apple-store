@@ -32,3 +32,25 @@ export async function POST(
         return new NextResponse("Internal error", {status: 500})
     }
 }
+
+// GET stores endopint - Get all stores
+export async function GET(
+    req: Request,
+) {
+    const headers = new Headers();
+    headers.append('Access-Control-Allow-Origin', '*');
+    headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
+    try {
+        const { userId } = auth()
+
+        const stores = await prismabd.store.findMany({
+            where: {}
+        })
+
+        return NextResponse.json(stores)
+    } catch (error) {
+        console.log('[STORES_GET]', error)
+        return new NextResponse("Internal error", {status: 500})
+    }
+}

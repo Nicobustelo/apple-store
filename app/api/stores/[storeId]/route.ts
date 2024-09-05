@@ -7,46 +7,59 @@ export async function PATCH (
     req: Request,
     // The params from the URL 
     {params} : { params : { storeId: string } }
-) {
+  ) {
     try {
         // Gets the userId from Clerk
         const { userId } = auth()
         // Gets the data from the request
         const body = await req.json()
-
-        const {name} = body
-
-        if(!userId){
-            return new NextResponse("Unauthenticated", { status: 401 })
-        }
-
-        if(!name){
-            return new NextResponse("Name is required", { status: 400 })
-        }
-
-        if(!params.storeId) {
-            return new NextResponse("Store id is required", { status: 400 })
-        }
-
-        const store = await prismabd.store.updateMany({
-            // Find the store
-            where: {
-                id: params.storeId,
-                userId
-            },
+  
+      const { name, subdomain } = body;
+  
+      if (!userId) {
+        return new NextResponse("Unauthenticated", { status: 401 });
+      }
+  
+      if (!name) {
+        return new NextResponse("Name is required", { status: 400 });
+      }
+  
+      if (!subdomain) {
+        return new NextResponse("Subdomain is required", { status: 400 });
+      }
+  
+      if (!params.storeId) {
+        return new NextResponse("Store id is required", { status: 400 });
+      }
+  
+      // Check if the subdomain is already in use
+      const existingStore = await prismabd.store.findUnique({
+        where: { subdomain },
+      });
+  
+      if (existingStore && existingStore.id !== params.storeId) {
+        return new NextResponse("Subdomain is already in use", { status: 400 });
+      }
+  
+      // Find the store and update it
+      const store = await prismabd.store.update({
+        where: {
+          id: params.storeId,
+          userId,
+        },
             // Data that is going to be changed
-            data: {
-                name
-            }
-        })
-
-        return NextResponse.json(store)
-
+        data: {
+          name,
+          subdomain,
+        },
+      });
+  
+      return NextResponse.json(store);
     } catch (error) {
-        console.log('[STORE_PATCH]', error);
-        return new NextResponse("Internal Error", {status: 500})
+      console.log('[STORE_PATCH]', error);
+      return new NextResponse("Internal Error", { status: 500 });
     }
-}
+  }
 
 export async function DELETE (
     // The data from the request the user made

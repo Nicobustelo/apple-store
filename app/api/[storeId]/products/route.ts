@@ -94,8 +94,6 @@ export async function GET(  // Va a estar muy dificil esto hno
     try {
         const { searchParams } = new URL(req.url);
         const categoryId = searchParams.get("categoryId") || undefined;
-        const modelId = searchParams.get("modelId") || undefined;
-        const memoryId = searchParams.get("memoryId") || undefined;
         const isFeatured = searchParams.get("isFeatured");
 
         if(!params.storeId){
