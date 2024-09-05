@@ -8,13 +8,13 @@ import { Heading } from "@/components/ui/heading"
 import { Separator } from "@/components/ui/separator"
 import { DataTable } from "@/components/ui/data-table"
 
-import { CategoryColumn, columns } from "./columns"
+import { ProductColumn, columns } from "./columns"
 
-interface CategoryClientProps {
-    data: CategoryColumn[]
+interface ProductClientProps {
+    data: ProductColumn[]
 }
 
-export const CategoryClient: React.FC<CategoryClientProps> = ({
+export const ProductClient: React.FC<ProductClientProps> = ({
     data
 }) => {
     const router = useRouter()
@@ -24,12 +24,12 @@ export const CategoryClient: React.FC<CategoryClientProps> = ({
         <>
             <div className="flex items-center justify-between">
                 <Heading 
-                    title={`Categorias (${data.length})`}
-                    description="Configurar las categorias de tu tienda"
+                    title={`Productos (${data.length})`}
+                    description="Configura los productos de tu tienda"
                 />
-                <Button onClick={() => router.push(`/${params.storeId}/categories/new`)}>
+                <Button onClick={() => router.push(`/${params.storeId}/products/new`)}>
                     <Plus className="mr-2 h-4 w-4"/>
-                    Nueva Categoría
+                    Nuevo Producto
                 </Button>
             </div>
             <Separator />
@@ -38,4 +38,4 @@ export const CategoryClient: React.FC<CategoryClientProps> = ({
     )
 }
 
-export default CategoryClient
+export default ProductClient

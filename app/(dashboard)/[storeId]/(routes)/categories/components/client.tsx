@@ -8,13 +8,13 @@ import { Heading } from "@/components/ui/heading"
 import { Separator } from "@/components/ui/separator"
 import { DataTable } from "@/components/ui/data-table"
 
-import { BillboardColumn, columns } from "./columns"
+import { CategoryColumn, columns } from "./columns"
 
-interface BillboardClientProps {
-    data: BillboardColumn[]
+interface CategoryClientProps {
+    data: CategoryColumn[]
 }
 
-export const BillboardClient: React.FC<BillboardClientProps> = ({
+export const CategoryClient: React.FC<CategoryClientProps> = ({
     data
 }) => {
     const router = useRouter()
@@ -24,18 +24,18 @@ export const BillboardClient: React.FC<BillboardClientProps> = ({
         <>
             <div className="flex items-center justify-between">
                 <Heading 
-                    title={`Billboards (${data.length})`}
-                    description="Manage billboards for your store"
+                    title={`Categorias (${data.length})`}
+                    description="Configurar las categorias de tu tienda"
                 />
-                <Button onClick={() => router.push(`/${params.storeId}/billboards/new`)}>
+                <Button onClick={() => router.push(`/${params.storeId}/categories/new`)}>
                     <Plus className="mr-2 h-4 w-4"/>
-                    Nuevo Baner
+                    Nueva Categoría
                 </Button>
             </div>
             <Separator />
-            <DataTable searchKey="label" columns={columns} data={data}/>
+            <DataTable searchKey="name" columns={columns} data={data}/>
         </>
     )
 }
 
-export default BillboardClient
+export default CategoryClient
