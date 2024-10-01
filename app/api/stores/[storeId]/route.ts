@@ -2,6 +2,38 @@ import prismabd from "@/lib/prismabd";
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 
+export async function GET (
+  // The data from the request the user made
+  // It is not used tho, it is only here becuase the params can only be accesed on the second argument of this function
+  _req: Request,
+  // The params from the URL 
+  {params} : { params : { storeId: string } }
+) {
+  // Add CORS headers
+  const headers = new Headers();
+  headers.append('Access-Control-Allow-Origin', '*');
+  headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
+  try {
+      if(!params.storeId) {
+          return new NextResponse("Store id is required", { status: 400 })
+      }
+
+      const store = await prismabd.store.findUnique({
+          // Find the store
+          where: {
+              id: params.storeId,
+          }
+      })
+
+      return NextResponse.json(store, { headers })
+
+  } catch (error) {
+      console.log('[STORE_GET]', error);
+      return new NextResponse("Internal Error", {status: 500})
+  }
+}
+
 export async function PATCH (
     // The data from the request the user made
     req: Request,
